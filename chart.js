@@ -65,21 +65,29 @@ function buildCharts(sample) {
     var result = samplesArray[0];
 
     // 6. Create variables that hold the otu_ids, otu_labels, and sample_values.
-    var otu_ids = data.samples.otu_ids
-    var otu_labels = data.samples.otu_labels
-    var sample_values = data.samples.sample_values
+    var otu_ids = result.otu_ids
+    var otu_labels = result.otu_labels
+    var sample_values = result.sample_values
 
     // 7. Create the yticks for the bar chart.
     // Hint: Get the the top 10 otu_ids and map them in descending order  
     //  so the otu_ids with the most bacteria are last. 
+    var sortedOTU = sample_values.sort((a,b) => a.otu_ids - b.otu_ids);
+    var topTenOTU = sortedOTU.slice(0,10).reverse();
 
-    var yticks = samples.map(samples => samples.otu_ids)
+    var topTenOTUsorted = topTenOTU.map(topTenOTU => parseInt(topTenOTU));
+
+    var yticks = otu_ids.map(sampleObj => "OTU " + sampleObj).slice(0,10).reverse();
+    console.log(yticks)
 
     // 8. Create the trace for the bar chart. 
     var trace = {
-      x: sample_values,
+      x: topTenOTUsorted,
       y: yticks,
-      type: "bar"
+      type: "bar",
+      orientation: "h",
+      text: otu_labels
+      
     };
 
     var barData = [trace];
@@ -95,5 +103,30 @@ function buildCharts(sample) {
     };
     // 10. Use Plotly to plot the data with the layout. 
     Plotly.newPlot("plot", barData, barLayout);
+
+    // 1. Create the trace for the bubble chart.
+    var bubbleData = [{
+      x: otu_ids,
+      y: sample_values,
+      mode: 'markers',
+      marker: {
+        size: sample_values,
+        color: otu_ids,
+        colorscale: "ice"
+      },
+      text: otu_labels
+    }];
+
+    // 2. Create the layout for the bubble chart.
+    var bubbleLayout = {
+      title: 'Bacteria Cultures Per Sample',
+      xaxis: {title: "OTU ID"},
+      showlegend: false,
+      //height: 600,
+      //width: 600
+    };
+
+    // 3. Use Plotly to plot the data with the layout.
+    Plotly.newPlot('bubble', bubbleData, bubbleLayout);
   });
 }
